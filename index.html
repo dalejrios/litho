@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html ng-app='liTho'>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+	<title>LiTho - Aprendizaje de Autómatas Finitos</title>
+	<link rel='stylesheet' type="text/css" href='css/bootstrap.min.css' />
+    <link rel='stylesheet' type="text/css" href='css/bootstrap-theme.min.css' />
+    <link rel='stylesheet' type="text/css" href='css/index.css' />
+    <link rel='stylesheet' type="text/css" href='css/toaster.min.css' />
+    <link rel='stylesheet' type="text/css" href='css/scrolls.css' />
+    <script src='js/cytoscape.min.js'></script>
+    <script src='js/angular.min.js'></script>
+    <script src='js/angular-animate.min.js'></script>
+    <script src='js/angular-route.min.js'></script>
+    <script src='js/angular-touch.min.js'></script>
+    <script src='js/ui-bootstrap-tpls-1.2.1.min.js'></script>
+    <script src='js/toaster.js'></script>
+    <script src='js/litho.js'></script>
+    <script src='js/services.js'></script>
+</head>
+<body>
+	<div class='centrado'>
+    	<h1>LiTho - Aprendizaje de Autómatas</h1>
+	</div>
+	<div class='container-fluid contenedor'>
+    	<div ng-controller='edicionController' class='row'>
+        	<div class='col-lg-7'>
+            	<uib-tabset active="activeJustified" justified="true">
+                    <uib-tab index="0" heading="Listado de Terminales">
+                    	<div class='edicion'>
+                            <h3>Listado de Terminales</h3>
+                            <div class='divisor'></div>
+                            <div class='col-lg-4'>
+                                <h4>Nuevo Terminal</h4>
+                                <select class='form-control' ng-model='nterm.tipo'>
+                                    <option disabled selected value='0'>Tipo de Terminal</option>
+                                    <option value='1'>Caracteres</option>
+                                    <option value='2'>Rango de Caracteres</option>
+                                    <option value='3'>Todo Excepto</option>
+                                </select>
+                                <input type='text' ng-model='nterm.et' class='form-control' placeholder='Etiqueta' ng-show='nterm.tipo > 0' />
+                                <input type='text' ng-model='nterm.car' class='form-control' placeholder='Caracter(es)' ng-show='nterm.tipo == 1 || nterm.tipo == 3' />
+                                <div class='col-lg-6'>
+                                	<input type='text' ng-model='nterm.ini' class='form-control' placeholder='Inicial' ng-show='nterm.tipo == 2' />
+                                </div>
+                                <div class='col-lg-6'>
+                                	<input type='text' ng-model='nterm.fin' class='form-control' placeholder='Final' ng-show='nterm.tipo == 2' />
+                                </div>
+                                <a class="btn btn-success" ng-click='newTer(nterm.tipo)'>
+      								<span class="glyphicon glyphicon-plus-sign"></span> Agregar
+    							</a>
+                            </div>
+                            <div class='col-lg-8'>
+                            	<h4>Listado de Terminales</h4>
+                                <table class='table table-bordered'>
+                                	<thead>
+                                    	<th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Valor(es)</th>
+                                        <th>Opciones</th>
+                                    </thead>
+                                    <tbody>
+                                    	<tr ng-repeat='it in aut.terminales'>
+                                        	<td>{{it.et}}</td>
+                                            <td>{{it.tip}}</td>
+                                            <td>{{it.val}}</td>
+                                            <td><a class="btn btn-danger" ng-click='delTer(it.cod)'>
+      												<span class="glyphicon glyphicon-remove"></span> Eliminar
+    											</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                    	</div>
+                    </uib-tab>
+                    <uib-tab index="1" heading="Estados del Autómata">
+                    	<div class='edicion'>
+                        	<h3>Listado de Estados</h3>
+                            <div class='divisor'></div>
+                            <div class='col-lg-5'>
+                            	<h4>Nuevo Estado</h4>
+                                <input type='text' placeholder='Etiqueta' ng-model='nest.et' class='form-control' />
+                                <a class="btn btn-success" ng-click='newEst()'>
+      								<span class="glyphicon glyphicon-plus-sign"></span> Agregar
+    							</a>
+                            </div>
+                            <h4>Estados Existentes</h4>
+                            <div class='col-lg-7'>
+                            	<table class='table table-bordered'>
+                                	<thead>
+                                        <th>Etiqueta</th>
+                                        <th>Opciones</th>
+                                    </thead>
+                                    <tbody>
+                                    	<tr ng-repeat='est in aut.estados'>
+                                            <td>{{est.Et}}</td>
+                                            <td>
+                                            	<a class="btn btn-danger" ng-click='delEst(est.No)'>
+      												<span class="glyphicon glyphicon-remove"></span> Eliminar
+    											</a>
+                                                <a class="btn btn-danger" ng-show='est.Ac' ng-click='remAc(est.No)'>
+      												<span class="glyphicon glyphicon-ban-circle"></span> No Aceptación
+    											</a>
+                                                <a class="btn btn-primary" ng-hide='est.Ac' ng-click='setAc(est.No)'>
+      												<span class="glyphicon glyphicon-ok-circle"></span> Aceptación
+    											</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </uib-tab>
+                    <uib-tab index="2" heading="Transiciones">
+                    	<div class='edicion'>
+                        	<h3>Listado de Transiciones</h3>
+                            <div class='divisor'></div>
+                            <div class='col-lg-4'>
+                            	<h4>Nueva Transición</h4>
+                                <select class='form-control' ng-model='ntra.in' ng-options='it.Et for it in aut.estados'>
+                                	<option disabled selected value=''>Estado Inicial</option>
+                                </select>
+                                <select class='form-control' ng-model='ntra.fn' ng-options='it.Et for it in aut.estados'>
+                                	<option disabled selected value=''>Estado Final</option>
+                                </select>
+                                <select class='form-control' ng-model='ntra.tr'>
+                                	<option disabled selected value=''>Terminal de Transición</option>
+                                    <option value='-1'>Cadena Vacía (Epsilon)</option>
+                                    <option ng-repeat='it in aut.terminales' ng-value='it.cod'>{{it.et}}</option>
+                                </select>
+                                <a class="btn btn-success" ng-click='newTra(ntra.in.No,ntra.fn.No,ntra.tr)'>
+      								<span class="glyphicon glyphicon-plus-sign"></span> Agregar
+    							</a>
+                            </div>
+                            <div class='col-lg-8'>
+                            	<h4>Transiciones Existentes</h4>
+                            	<table class='table table-bordered'>
+                                	<thead>
+                                    	<th>Estado Inicial</th>
+                                        <th>Estado Final</th>
+                                        <th>Terminal de Transición</th>
+                                        <th>Opciones</th>
+                                    </thead>
+                                    <tbody>
+                                    	<tr ng-repeat='it in aut.transiciones'>
+                                        	<td>{{findState(it.ini)}}</td>
+                                            <td>{{findState(it.fin)}}</td>
+                                            <td>{{findTerm(it.sim)}}</td>
+                                            <td>
+                                            	<a class="btn btn-danger" ng-click='delTra(it.ini,it.i,it.sim)'>
+      												<span class="glyphicon glyphicon-plus-sign"></span> Eliminar
+    											</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </uib-tab>
+                    <uib-tab index="3" heading="Algoritmos">
+                    	<div class='centrado'>
+                            <h3>Algoritmos Disponibles</h3>
+                            <div class='divisor'></div>
+                            <uib-tabset active="activeJustified" justified="true">
+                                <uib-tab index="0" heading="Subconjuntos">
+                                	<div class='row'>
+                                    	<div class='col-lg-4'>
+                                        	<div class='centrado'><h4>Cerraduras</h4></div>
+                                            <table class='table table-bordered table-responsive'>
+                                            	<thead>
+                                                	<th>#</th>
+                                                    <th>Conjunto</th>
+                                                    <th>Cerradura</th>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                        <div class='col-lg-4'>
+                                        	<div class='centrado'><h4>Transiciones</h4></div>
+                                        </div>
+                                        <div class='col-lg-4'>
+                                        	<div class='centrado'><h4>Resumen</h4></div>
+                                        </div>
+                                    </div>
+                                </uib-tab>
+                                <uib-tab index="1" heading="Metódo del Árbol"></uib-tab>
+                            </uib-tabset>
+                        </div>
+                    </uib-tab>
+                </uib-tabset>
+            </div>
+            <div class='col-lg-5'>
+            	<div class='centrado'>
+                    <a class="btn btn-primary" ng-click='newAut()'>
+                        <span class="glyphicon glyphicon-plus-sign"></span> Nuevo Autómata
+                    </a>
+                    <a class="btn btn-primary" ng-click='test()'>
+                        <span class="glyphicon glyphicon-download"></span> Descargar Imagen
+                    </a>
+                    <a class="btn btn-warning" ng-click='transfTrans(aut.transiciones)'>
+                        <span class="glyphicon glyphicon-save-file"></span> Generar Reporte
+                    </a>
+                </div>
+            	<div id='autEdicion'></div>
+            </div>
+        </div>
+    </div>
+    <toaster-container toaster-options="{'time-out': 3000, 'close-button':true}"></toaster-container>
+    
+</body>
+</html>
